@@ -5,12 +5,15 @@ from polcurvefit import polcurvefit, DataImport
 # Set up the app title
 st.title("Electrochemical Data Analysis")
 
-# File uploader widget
-uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+# File uploader widget, supporting both CSV and Excel files
+uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
-    # Read the uploaded CSV file
-    df = pd.read_csv(uploaded_file)
+    # Determine file type and read the uploaded file
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
+    elif uploaded_file.name.endswith(".xlsx"):
+        df = pd.read_excel(uploaded_file)
     
     # Display the uploaded data
     st.write("Uploaded Data:")
@@ -19,7 +22,7 @@ if uploaded_file is not None:
     # Extract columns for potential and current based on your format
     potential_column = df.columns[0]
     current_column = df.columns[2]
-    
+
     E = df[potential_column].values
     I = df[current_column].values
 
@@ -41,6 +44,6 @@ if uploaded_file is not None:
     # Save plot and display it
     plot_path = 'Visualization_fit/polcurve_plot.png'
     Polcurve.plotting(output_folder='Visualization_fit')
-
+    
     # Display the plot image
     st.image(plot_path)
