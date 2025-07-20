@@ -1,1 +1,3 @@
 polcurvefit
+pandas
+streamlit
