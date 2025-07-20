@@ -2,3 +2,4 @@ polcurvefit
 pandas
 streamlit
 openpyxl
+matplotlib
