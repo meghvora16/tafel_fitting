@@ -1,39 +1,42 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-from polcurvefit import polcurvefit  # Assuming this library is correct
-# Example data loading function:
-from polcurvefit import DataImport
+from polcurvefit import polcurvefit, DataImport
+import os
 
-# Application title
+# Set up the Streamlit app title
 st.title("Electrochemical Data Analysis")
 
-# File uploader to support CSV and Excel
+# File uploader widget to support CSV and Excel files
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
 
+# Directory where plots are saved
+plot_output_folder = 'Visualization_activation_control_fit'
+
 if uploaded_file is not None:
-    # Read file based on type
+    # Read the uploaded file (CSV or Excel)
     if uploaded_file.name.endswith(".csv"):
         df = pd.read_csv(uploaded_file)
     elif uploaded_file.name.endswith(".xlsx"):
         df = pd.read_excel(uploaded_file)
 
+    # Display uploaded data
     st.write("Uploaded Data:")
     st.dataframe(df)
 
-    # Assuming column 0 for potential and column 2 for current
+    # Extract potential and current columns
     potential_column = df.columns[0]
     current_column = df.columns[2]
 
     E = df[potential_column].values
     I = df[current_column].values
 
-    # Initialize fit
+    # Initialize polcurvefit with the loaded data
     Polcurve = polcurvefit(E, I, sample_surface=1E-4)
     
-    # Perform fitting
+    # Perform the active polarization curve fit
     popt, E_corr, I_corr, anodic_slope, cathodic_slope, r_square = Polcurve.active_pol_fit(window=[-0.07, 0.07])
 
+    # Display results
     st.write("Fitted Parameters:")
     st.write(f"Fitted parameters: {popt}")
     st.write(f"E_corr: {E_corr}")
@@ -42,12 +45,12 @@ if uploaded_file is not None:
     st.write(f"Cathodic slope: {cathodic_slope}")
     st.write(f"R²: {r_square}")
 
-    # Plotting with Matplotlib
-    fig, ax = plt.subplots()
-    ax.plot(E, I, 'o', label='Data')  # Plot the raw data for illustration
-    ax.set_xlabel('Potential (V)')
-    ax.set_ylabel('Current (A)')
-    ax.legend()
-    
-    # Displaying plots on the Streamlit app
-    st.pyplot(fig)
+    # Save plots
+    Polcurve.plotting(output_folder=plot_output_folder)
+
+    # Display each plot in the visualization directory
+    st.write("Plots:")
+    for plot_file in os.listdir(plot_output_folder):
+        if plot_file.endswith('.png') or plot_file.endswith('.jpg'):
+            plot_path = os.path.join(plot_output_folder, plot_file)
+            st.image(plot_path)
