@@ -1,3 +1,4 @@
 polcurvefit
 pandas
 streamlit
+openpyxl
